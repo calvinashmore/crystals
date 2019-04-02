@@ -88,46 +88,58 @@ public abstract class Lattice {
   
   public abstract CrystalSystemType getSystem();
   public abstract CenteringType getCenteringType();
+  public abstract Matrix3d getShapeMatrix();
   public abstract Matrix3d getGeneratorMatrix();
   
-  static Lattice create(CrystalSystemType system, CenteringType centeringType, Matrix3d generatorMatrix) {
-    return new AutoValue_Lattice(system,centeringType,generatorMatrix);
+  static Lattice create(CrystalSystemType system, CenteringType centeringType, Matrix3d shapeMatrix) {
+    return new AutoValue_Lattice(system,centeringType,shapeMatrix, createGeneratorMatrix(shapeMatrix, centeringType));
   }
   
-  public ImmutableSet<Point3d> getGenerators() {
-    ImmutableSet.Builder<Point3d> generators = ImmutableSet.builder();
+  private static Matrix3d createGeneratorMatrix(Matrix3d shapeMatrix, CenteringType centeringType) {
+    // Need to rework some of this;
+    // with a non-primitive centering type, we can change how we actually use the generating vectors
+    // for base centered, x,y,(x+z)/2 is enough to fully describe lattice
     
-    generators.add(getGeneratorMatrix().apply(Point3d.UNIT_X));
-    generators.add(getGeneratorMatrix().apply(Point3d.UNIT_Y));
-    generators.add(getGeneratorMatrix().apply(Point3d.UNIT_Z));
+    Point3d x, y, z;
     
-    if (getCenteringType() == CenteringType.BASE_CENTERED) {
-      Point3d baseCenter = 
-               getGeneratorMatrix().apply(Point3d.UNIT_X)
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_Z)).multiply(0.5);
-      generators.add(baseCenter);
-    } else if (getCenteringType() == CenteringType.BODY_CENTERED) {
-      Point3d bodyCenter = 
-               getGeneratorMatrix().apply(Point3d.UNIT_X)
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_Y))
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_Z)).multiply(0.5);
-      generators.add(bodyCenter);
-    } else if (getCenteringType() == CenteringType.FACE_CENTERED) {
-      Point3d xyCenter = 
-               getGeneratorMatrix().apply(Point3d.UNIT_X)
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_Y)).multiply(0.5);
-      Point3d yzCenter = 
-               getGeneratorMatrix().apply(Point3d.UNIT_Y)
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_Z)).multiply(0.5);
-      Point3d zxCenter = 
-               getGeneratorMatrix().apply(Point3d.UNIT_Z)
-          .add(getGeneratorMatrix().apply(Point3d.UNIT_X)).multiply(0.5);
-      generators.add(xyCenter);
-      generators.add(yzCenter);
-      generators.add(zxCenter);
+    switch (centeringType) {
+      case PRIMITIVE:
+        x = shapeMatrix.apply(Point3d.UNIT_X);
+        y = shapeMatrix.apply(Point3d.UNIT_Y);
+        z = shapeMatrix.apply(Point3d.UNIT_Z);
+        break;
+        
+      case BASE_CENTERED:
+        // base is understood as XZ
+        x = shapeMatrix.apply(Point3d.UNIT_X);
+        y = shapeMatrix.apply(Point3d.UNIT_Y);
+        z = shapeMatrix.apply(Point3d.UNIT_X)
+                .add(shapeMatrix.apply(Point3d.UNIT_Z)).multiply(0.5);
+        break;
+      case BODY_CENTERED:
+        x = shapeMatrix.apply(Point3d.UNIT_X);
+        y = shapeMatrix.apply(Point3d.UNIT_Y);
+        z = shapeMatrix.apply(Point3d.UNIT_X)
+                .add(shapeMatrix.apply(Point3d.UNIT_Y))
+                .add(shapeMatrix.apply(Point3d.UNIT_Z)).multiply(0.5);
+        break;
+      case FACE_CENTERED:
+        x = shapeMatrix.apply(Point3d.UNIT_X)
+                .add(shapeMatrix.apply(Point3d.UNIT_Y)).multiply(0.5);
+        y = shapeMatrix.apply(Point3d.UNIT_Y)
+                .add(shapeMatrix.apply(Point3d.UNIT_Z)).multiply(0.5);
+        z = shapeMatrix.apply(Point3d.UNIT_Z)
+                .add(shapeMatrix.apply(Point3d.UNIT_X)).multiply(0.5);
+        break;
+      default:
+        throw new IllegalArgumentException();
     }
     
-    return generators.build();
+    return new Matrix3d(
+        x.getX(), x.getY(), x.getZ(),
+        y.getX(), y.getY(), y.getZ(),
+        z.getX(), z.getY(), z.getZ()
+    );
   }
   
   public Point3d generateCorner(int x, int y, int z) {

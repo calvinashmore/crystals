@@ -21,35 +21,39 @@ import javax.swing.JPanel;
 public class Toast {
   public static void main(String args[]) {
     
-    MainPanel mainPanel = new MainPanel();
-
-    JFrame frame = new JFrame("meh");
-    frame.add(mainPanel);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.pack();
-    frame.setVisible(true);
+    Lattice lattice = Lattice.hexagonal(1, 1.5);
+    
+    
+    
+//    MainPanel mainPanel = new MainPanel();
+//
+//    JFrame frame = new JFrame("meh");
+//    frame.add(mainPanel);
+//    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    frame.pack();
+//    frame.setVisible(true);
   }
   
-  private static class MainPanel extends JPanel {
-    private static final int INITIAL_RES = 800;
-    
-    @Override
-    public Dimension getPreferredSize() {
-      return new Dimension(INITIAL_RES, INITIAL_RES);
-    }
-
-    @Override
-    public void paint(Graphics g) {
-      Graphics2D g2 = (Graphics2D) g;
-      ImmutableSet<Point3d> generators = Lattice.hexagonal(1.0, 0.5).getGenerators();
-      
-      for(Point3d p : generators) {
-//        int x = p.getX();
-//        
-//        g2.fillOval(x, y, 10, 10);
-      }
-      
-      
-    }
-  }
+//  private static class MainPanel extends JPanel {
+//    private static final int INITIAL_RES = 800;
+//    
+//    @Override
+//    public Dimension getPreferredSize() {
+//      return new Dimension(INITIAL_RES, INITIAL_RES);
+//    }
+//
+//    @Override
+//    public void paint(Graphics g) {
+//      Graphics2D g2 = (Graphics2D) g;
+//      ImmutableSet<Point3d> generators = Lattice.hexagonal(1.0, 0.5).getGenerators();
+//      
+//      for(Point3d p : generators) {
+////        int x = p.getX();
+////        
+////        g2.fillOval(x, y, 10, 10);
+//      }
+//      
+//      
+//    }
+//  }
 }
