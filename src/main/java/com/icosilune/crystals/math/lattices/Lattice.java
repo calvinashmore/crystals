@@ -7,14 +7,15 @@ package com.icosilune.crystals.math.lattices;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.icosilune.crystals.math.CrystalSystemType;
 import com.icosilune.crystals.math.Matrix3d;
 import com.icosilune.crystals.math.Point3d;
 
 /**
- *
- * @author ashmore
+ * All lattices returned by the static methods are aligned with the identity matrix. So, in a cubic
+ * lattice with primitive centering and size of 1, calls to generate() will just return the same
+ * point. The transform method allows arbitrary transformations, but non point group transformations
+ * will break the intended structures.
  */
 @AutoValue
 public abstract class Lattice {
@@ -22,7 +23,7 @@ public abstract class Lattice {
   public static Lattice cubic(double a, CenteringType centeringType) {
     Preconditions.checkArgument(centeringType == CenteringType.PRIMITIVE || centeringType == CenteringType.BODY_CENTERED || centeringType == CenteringType.FACE_CENTERED);
     
-    return generalLattice(CrystalSystemType.HEXAGONAL, centeringType,  a,a,a, Math.PI/2,Math.PI/2,Math.PI/2);
+    return generalLattice(CrystalSystemType.CUBIC, centeringType,  a,a,a, Math.PI/2,Math.PI/2,Math.PI/2);
   }
   
   public static Lattice hexagonal(double a, double c) {
@@ -95,11 +96,19 @@ public abstract class Lattice {
     return new AutoValue_Lattice(system,centeringType,shapeMatrix, createGeneratorMatrix(shapeMatrix, centeringType));
   }
   
+  public Lattice transform(Matrix3d m) {
+    return create(getSystem(), getCenteringType(), m.apply(getShapeMatrix()));
+  }
+  
+  /*
+   * If we think of the base shape of the lattice being defined by the vectors of a matrix, then the
+   * actual lattice points are defined by using the centering to define a sub shape that includes
+   * centering points. So for example the base centering type replaces the z vector with the average
+   * of the x and z vectors. The old z can be recreated by z+z-x. This establishes how the cubic face
+   * centered lattice is tetragonal.
+   */
   private static Matrix3d createGeneratorMatrix(Matrix3d shapeMatrix, CenteringType centeringType) {
-    // Need to rework some of this;
-    // with a non-primitive centering type, we can change how we actually use the generating vectors
-    // for base centered, x,y,(x+z)/2 is enough to fully describe lattice
-    
+
     Point3d x, y, z;
     
     switch (centeringType) {
@@ -142,7 +151,7 @@ public abstract class Lattice {
     );
   }
   
-  public Point3d generateCorner(int x, int y, int z) {
+  public Point3d generate(int x, int y, int z) {
     Point3d p = new Point3d(x,y,z);
     return getGeneratorMatrix().apply(p);
   }

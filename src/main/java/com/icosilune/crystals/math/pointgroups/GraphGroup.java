@@ -38,7 +38,7 @@ public class GraphGroup<T> implements Group<T> {
     this.operator = operator;
     this.inverses = findInverses(identity, entries, operator);
     
-    Preconditions.checkArgument(checkClosure(entries, operator));
+//    Preconditions.checkArgument(checkClosure(entries, operator));
     
     for(T a : entries) {
       Preconditions.checkArgument(inverses.containsKey(a), "%s has no inverse", a);

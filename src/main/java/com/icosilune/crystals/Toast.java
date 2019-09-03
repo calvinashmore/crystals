@@ -6,6 +6,8 @@
 package com.icosilune.crystals;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.Longs;
 import com.icosilune.crystals.math.Point3d;
 import com.icosilune.crystals.math.lattices.Lattice;
 import java.awt.Dimension;
@@ -23,8 +25,8 @@ public class Toast {
     
     Lattice lattice = Lattice.hexagonal(1, 1.5);
     
-    
-    
+
+
 //    MainPanel mainPanel = new MainPanel();
 //
 //    JFrame frame = new JFrame("meh");
